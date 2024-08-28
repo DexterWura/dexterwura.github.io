@@ -140,36 +140,69 @@
                       </h5>
                     </div>
                     <div>
-                      <form action="https://formspree.io/f/meojnrgz" method="post" role="form" class="php-email-form">
-                        <div class="row">
-                          
-                          <div class="col-md-12 mb-3">
-                            <div class="form-group">
-                              <input type="text" class="form-control" name="name" id="name" placeholder="Your Name" required>
-                            </div>
-                          </div>
+                      <form id="contact-form" method="post" role="form" class="php-email-form">
+  <div class="row">
+    <div class="col-md-12 mb-3">
+      <div class="form-group">
+        <input type="text" class="form-control" name="name" id="name" placeholder="Your Name" required>
+      </div>
+    </div>
+    <div class="col-md-12 mb-3">
+      <div class="form-group">
+        <input type="email" class="form-control" name="email" id="email" placeholder="Your Email" required>
+      </div>
+    </div>
+    <div class="col-md-12">
+      <div class="form-group">
+        <textarea class="form-control" name="message" rows="3" placeholder="Message (Optional)"></textarea>
+      </div>
+    </div>
+    <div class="col-md-12 text-center my-3">
+      <div class="loading" style="display: none;">Loading</div>
+      <div class="error-message" style="display: none;"></div>
+      <div class="sent-message" style="display: none;">Thank you! You will be one of the first to join the beta when it’s live.</div>
+    </div>
+    <div class="col-md-12 text-center">
+      <button type="submit" class="button button-a button-big button-rouded">Join Now</button>
+    </div>
+  </div>
+</form>
 
-                          <div class="col-md-12 mb-3">
-                            <div class="form-group">
-                              <input type="email" class="form-control" name="email" id="email" placeholder="Your Email" required>
-                            </div>
-                          </div>
-                          
-                          <div class="col-md-12">
-                            <div class="form-group">
-                              <textarea class="form-control" name="message" rows="3" placeholder="Message (Optional)"></textarea>
-                            </div>
-                          </div>
-                          <div class="col-md-12 text-center my-3">
-                            <div class="loading">Loading</div>
-                            <div class="error-message"></div>
-                            <div class="sent-message">Thank you! You will be one of the first to join the beta when its live</div>
-                          </div>
-                          <div class="col-md-12 text-center">
-                            <button type="submit" class="button button-a button-big button-rouded">Join Now</button>
-                          </div>
-                        </div>
-                      </form>
+<script>
+  document.getElementById('contact-form').addEventListener('submit', function(event) {
+    event.preventDefault();
+    document.querySelector('.loading').style.display = 'block';
+    
+    fetch('https://formspree.io/f/meojnrgz', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json'
+      },
+      body: new FormData(this)
+    }).then(function(response) {
+      document.querySelector('.loading').style.display = 'none';
+      if (response.ok) {
+        document.querySelector('.sent-message').style.display = 'block';
+        document.querySelector('.error-message').style.display = 'none';
+        document.getElementById('contact-form').reset();
+      } else {
+        response.json().then(function(data) {
+          if (data.errors) {
+            document.querySelector('.error-message').innerHTML = data.errors.map(error => error.message).join(", ");
+          } else {
+            document.querySelector('.error-message').innerHTML = "Oops! There was a problem submitting your form.";
+          }
+          document.querySelector('.error-message').style.display = 'block';
+        });
+      }
+    }).catch(function(error) {
+      document.querySelector('.loading').style.display = 'none';
+      document.querySelector('.error-message').innerHTML = "Oops! There was a problem submitting your form.";
+      document.querySelector('.error-message').style.display = 'block';
+    });
+  });
+</script>
+
                     </div>
                   </div>
                   <div class="col-md-6">
