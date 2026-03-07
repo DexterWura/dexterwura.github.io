@@ -1,229 +1,244 @@
-/**
-* Template Name: DevFolio - v4.7.1
-* Template URL: https://bootstrapmade.com/devfolio-bootstrap-portfolio-html-template/
-* Author: BootstrapMade.com
-* License: https://bootstrapmade.com/license/
-*/
 (function() {
   "use strict";
+  document.documentElement.classList.add("js");
 
-  /**
-   * Easy selector helper function
-   */
+  const THEME_KEY = "dexterwura-theme";
+  const THEME_DARK = "dark";
+  const THEME_LIGHT = "light";
+
+  function getStoredTheme() {
+    return localStorage.getItem(THEME_KEY);
+  }
+
+  function getPreferredTheme() {
+    const stored = getStoredTheme();
+    if (stored) return stored;
+    return window.matchMedia("(prefers-color-scheme: light)").matches ? THEME_LIGHT : THEME_DARK;
+  }
+
+  function setTheme(theme) {
+    document.documentElement.setAttribute("data-theme", theme);
+    const toggle = document.querySelector(".theme-toggle");
+    if (toggle) {
+      toggle.setAttribute("aria-label", theme === THEME_DARK ? "Switch to light mode" : "Switch to dark mode");
+      toggle.setAttribute("title", theme === THEME_DARK ? "Switch to light mode" : "Switch to dark mode");
+    }
+  }
+
+  function initTheme() {
+    setTheme(getPreferredTheme());
+    document.querySelector(".theme-toggle")?.addEventListener("click", function() {
+      const next = document.documentElement.getAttribute("data-theme") === THEME_LIGHT ? THEME_DARK : THEME_LIGHT;
+      localStorage.setItem(THEME_KEY, next);
+      setTheme(next);
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initTheme);
+  } else {
+    initTheme();
+  }
+
   const select = (el, all = false) => {
-    el = el.trim()
-    if (all) {
-      return [...document.querySelectorAll(el)]
-    } else {
-      return document.querySelector(el)
-    }
-  }
+    el = el.trim();
+    if (all) return [...document.querySelectorAll(el)];
+    return document.querySelector(el);
+  };
 
-  /**
-   * Easy event listener function
-   */
   const on = (type, el, listener, all = false) => {
-    let selectEl = select(el, all)
-    if (selectEl) {
-      if (all) {
-        selectEl.forEach(e => e.addEventListener(type, listener))
-      } else {
-        selectEl.addEventListener(type, listener)
-      }
+    const elList = select(el, all);
+    if (elList) {
+      if (all) elList.forEach(e => e.addEventListener(type, listener));
+      else elList.addEventListener(type, listener);
     }
-  }
+  };
 
-  /**
-   * Easy on scroll event listener 
-   */
-  const onscroll = (el, listener) => {
-    el.addEventListener('scroll', listener)
-  }
+  const onscroll = (el, listener) => el.addEventListener("scroll", listener);
 
-  /**
-   * Navbar links active state on scroll
-   */
-  let navbarlinks = select('#navbar .scrollto', true)
-  const navbarlinksActive = () => {
-    let position = window.scrollY + 200
-    navbarlinks.forEach(navbarlink => {
-      if (!navbarlink.hash) return
-      let section = select(navbarlink.hash)
-      if (!section) return
-      if (position >= section.offsetTop && position <= (section.offsetTop + section.offsetHeight)) {
-        navbarlink.classList.add('active')
-      } else {
-        navbarlink.classList.remove('active')
-      }
-    })
-  }
-  window.addEventListener('load', navbarlinksActive)
-  onscroll(document, navbarlinksActive)
-
-  /**
-   * Scrolls to an element with header offset
-   */
-  const scrollto = (el) => {
-    let header = select('#header')
-    let offset = header.offsetHeight
-
-    if (!header.classList.contains('header-scrolled')) {
-      offset -= 16
-    }
-
-    let elementPos = select(el).offsetTop
+  const scrollto = (selector) => {
+    const target = select(selector);
+    const header = select("#header");
+    if (!target || !header) return;
+    const offset = header.offsetHeight;
     window.scrollTo({
-      top: elementPos - offset,
-      behavior: 'smooth'
-    })
-  }
+      top: target.offsetTop - offset,
+      behavior: "smooth"
+    });
+  };
 
-  /**
-   * Toggle .header-scrolled class to #header when page is scrolled
-   */
-  let selectHeader = select('#header')
-  if (selectHeader) {
+  // Header scroll state
+  const header = select("#header");
+  if (header) {
     const headerScrolled = () => {
-      if (window.scrollY > 100) {
-        selectHeader.classList.add('header-scrolled')
-      } else {
-        selectHeader.classList.remove('header-scrolled')
-      }
-    }
-    window.addEventListener('load', headerScrolled)
-    onscroll(document, headerScrolled)
+      if (window.scrollY > 80) header.classList.add("scrolled");
+      else header.classList.remove("scrolled");
+    };
+    window.addEventListener("load", headerScrolled);
+    onscroll(document, headerScrolled);
   }
 
-  /**
-   * Back to top button
-   */
-  let backtotop = select('.back-to-top')
-  if (backtotop) {
-    const toggleBacktotop = () => {
-      if (window.scrollY > 100) {
-        backtotop.classList.add('active')
-      } else {
-        backtotop.classList.remove('active')
-      }
-    }
-    window.addEventListener('load', toggleBacktotop)
-    onscroll(document, toggleBacktotop)
-  }
+  // Nav active state on scroll
+  const navLinks = select("#navbar .scrollto", true);
+  const setNavActive = () => {
+    const scrollY = window.scrollY + 120;
+    navLinks.forEach(link => {
+      const href = link.getAttribute("href");
+      if (!href || href === "#") return;
+      const section = select(href);
+      if (!section) return;
+      const top = section.offsetTop;
+      const bottom = top + section.offsetHeight;
+      if (scrollY >= top && scrollY <= bottom) link.classList.add("active");
+      else link.classList.remove("active");
+    });
+  };
+  window.addEventListener("load", setNavActive);
+  onscroll(document, setNavActive);
 
-  /**
-   * Mobile nav toggle
-   */
-  on('click', '.mobile-nav-toggle', function(e) {
-    select('#navbar').classList.toggle('navbar-mobile')
-    this.classList.toggle('bi-list')
-    this.classList.toggle('bi-x')
-  })
-
-  /**
-   * Mobile nav dropdowns activate
-   */
-  on('click', '.navbar .dropdown > a', function(e) {
-    if (select('#navbar').classList.contains('navbar-mobile')) {
-      e.preventDefault()
-      this.nextElementSibling.classList.toggle('dropdown-active')
-    }
-  }, true)
-
-  /**
-   * Scrool with ofset on links with a class name .scrollto
-   */
-  on('click', '.scrollto', function(e) {
-    if (select(this.hash)) {
-      e.preventDefault()
-
-      let navbar = select('#navbar')
-      if (navbar.classList.contains('navbar-mobile')) {
-        navbar.classList.remove('navbar-mobile')
-        let navbarToggle = select('.mobile-nav-toggle')
-        navbarToggle.classList.toggle('bi-list')
-        navbarToggle.classList.toggle('bi-x')
-      }
-      scrollto(this.hash)
-    }
-  }, true)
-
-  /**
-   * Scroll with ofset on page load with hash links in the url
-   */
-  window.addEventListener('load', () => {
-    if (window.location.hash) {
-      if (select(window.location.hash)) {
-        scrollto(window.location.hash)
-      }
-    }
-  });
-
-  /**
-   * Intro type effect
-   */
-  const typed = select('.typed')
-  if (typed) {
-    let typed_strings = typed.getAttribute('data-typed-items')
-    typed_strings = typed_strings.split(',')
-    new Typed('.typed', {
-      strings: typed_strings,
-      loop: true,
-      typeSpeed: 100,
-      backSpeed: 50,
-      backDelay: 2000
+  // Back to top
+  const backToTop = select(".back-to-top");
+  if (backToTop) {
+    const toggleBackToTop = () => {
+      if (window.scrollY > 400) backToTop.classList.add("visible");
+      else backToTop.classList.remove("visible");
+    };
+    window.addEventListener("load", toggleBackToTop);
+    onscroll(document, toggleBackToTop);
+    on("click", ".back-to-top", (e) => {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: "smooth" });
     });
   }
 
-  /**
-   * Initiate portfolio lightbox 
-   */
-  const portfolioLightbox = GLightbox({
-    selector: '.portfolio-lightbox'
-  });
-
-  /**
-   * Testimonials slider
-   */
-  new Swiper('.testimonials-slider', {
-    speed: 600,
-    loop: true,
-    autoplay: {
-      delay: 5000,
-      disableOnInteraction: false
-    },
-    slidesPerView: 'auto',
-    pagination: {
-      el: '.swiper-pagination',
-      type: 'bullets',
-      clickable: true
+  // Mobile nav toggle
+  on("click", ".mobile-nav-toggle", function() {
+    const navbar = select("#navbar ul");
+    const icon = this.querySelector("i");
+    if (navbar) navbar.classList.toggle("open");
+    if (icon) {
+      icon.classList.toggle("bi-list");
+      icon.classList.toggle("bi-x");
     }
   });
 
-  /**
-   * Portfolio details slider
-   */
-  new Swiper('.portfolio-details-slider', {
-    speed: 400,
-    loop: true,
-    autoplay: {
-      delay: 5000,
-      disableOnInteraction: false
-    },
-    pagination: {
-      el: '.swiper-pagination',
-      type: 'bullets',
-      clickable: true
+  // Nav link click: scroll + close mobile menu
+  on("click", ".navbar .scrollto", function(e) {
+    if (this.hash && select(this.hash)) {
+      e.preventDefault();
+      scrollto(this.hash);
     }
-  });
+    const navbar = select("#navbar ul");
+    const toggle = select(".mobile-nav-toggle i");
+    if (navbar && navbar.classList.contains("open")) {
+      navbar.classList.remove("open");
+      if (toggle) {
+        toggle.classList.add("bi-list");
+        toggle.classList.remove("bi-x");
+      }
+    }
+  }, true);
 
-  /**
-   * Preloader
-   */
-  let preloader = select('#preloader');
+  // Scroll reveal
+  const revealEls = select(".reveal", true);
+  if (revealEls.length && "IntersectionObserver" in window) {
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const el = entry.target;
+          el.classList.add("visible");
+          if (el.dataset.delay) el.classList.add("delay-" + el.dataset.delay);
+        }
+      });
+    }, { rootMargin: "0px 0px -60px 0px", threshold: 0.1 });
+
+    revealEls.forEach((el) => {
+      const parent = el.closest(".row");
+      if (parent) {
+        const idx = [...parent.children].indexOf(el);
+        el.dataset.delay = Math.min((idx % 4) + 1, 4);
+      }
+      revealObserver.observe(el);
+    });
+  }
+
+  // Typed.js
+  const typedEl = select(".typed");
+  if (typedEl && typeof Typed !== "undefined") {
+    const items = typedEl.getAttribute("data-typed-items");
+    if (items) {
+      new Typed(".typed", {
+        strings: items.split(",").map(s => s.trim()),
+        loop: true,
+        typeSpeed: 80,
+        backSpeed: 40,
+        backDelay: 2000
+      });
+    }
+  }
+
+  // GLightbox (if any .portfolio-lightbox exist)
+  if (typeof GLightbox !== "undefined") {
+    GLightbox({ selector: ".portfolio-lightbox" });
+  }
+
+  // Preloader
+  const preloader = select("#preloader");
   if (preloader) {
-    window.addEventListener('load', () => {
-      preloader.remove()
-    });
+    window.addEventListener("load", () => preloader.remove());
   }
 
-})()
+  // Hash on load
+  window.addEventListener("load", () => {
+    if (window.location.hash && select(window.location.hash)) {
+      scrollto(window.location.hash);
+    }
+  });
+
+  // Hero terminal: code typing effect
+  (function initTerminalTyping() {
+    const cmdEl = select("#terminal-cmd");
+    const typedEl = select("#terminal-typed");
+    if (!cmdEl || !typedEl) return;
+
+    const sequences = [
+      { cmd: "whoami", output: "Dexterity Wurayayi" },
+      { cmd: "git status", output: "On branch main. Building cool things." },
+      { cmd: "cat passion.txt", output: "Java • Laravel • PHP • The web." }
+    ];
+
+    let seqIndex = 0;
+    let charIndex = 0;
+    let isDeleting = false;
+    let doneTyping = false;
+
+    function tick() {
+      const seq = sequences[seqIndex];
+      const text = seq.output;
+
+      if (isDeleting) {
+        typedEl.textContent = text.substring(0, charIndex - 1);
+        charIndex--;
+        if (charIndex === 0) {
+          isDeleting = false;
+          seqIndex = (seqIndex + 1) % sequences.length;
+          cmdEl.textContent = sequences[seqIndex].cmd;
+          doneTyping = false;
+        }
+      } else {
+        typedEl.textContent = text.substring(0, charIndex + 1);
+        charIndex++;
+        if (charIndex === text.length) {
+          doneTyping = true;
+          isDeleting = true;
+        }
+      }
+
+      const delay = isDeleting ? 40 : (doneTyping ? 2200 : 70);
+      setTimeout(tick, delay);
+    }
+
+    cmdEl.textContent = sequences[0].cmd;
+    setTimeout(tick, 600);
+  })();
+})();
