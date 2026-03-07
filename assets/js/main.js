@@ -78,20 +78,22 @@
     onscroll(document, headerScrolled);
   }
 
-  // Nav active state on scroll
+  // Nav active state on scroll (only one section active at a time)
   const navLinks = select("#navbar .scrollto", true);
   const setNavActive = () => {
-    const scrollY = window.scrollY + 120;
+    const scrollY = window.scrollY + 140;
+    let activeLink = null;
     navLinks.forEach(link => {
       const href = link.getAttribute("href");
-      if (!href || href === "#") return;
+      if (!href || href.charAt(0) !== "#") return;
       const section = select(href);
       if (!section) return;
       const top = section.offsetTop;
       const bottom = top + section.offsetHeight;
-      if (scrollY >= top && scrollY <= bottom) link.classList.add("active");
-      else link.classList.remove("active");
+      link.classList.remove("active");
+      if (scrollY >= top && scrollY < bottom) activeLink = link;
     });
+    if (activeLink) activeLink.classList.add("active");
   };
   window.addEventListener("load", setNavActive);
   onscroll(document, setNavActive);
